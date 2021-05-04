@@ -26,6 +26,7 @@ let MessageSchema = new Schema(
               required: true 
             }
           },
+        voters: {type:[String]},
         initialPoint:{
           longitude:{type:Number,required:true},
           latitude:{type:Number,required:true},

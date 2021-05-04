@@ -1,6 +1,6 @@
 
 const mongo = require("./db/dbConnector");
-const MessageModel = require("./db/models/message");
+const MessageModel = require("./db/models/messageModel");
 import { Document } from "mongoose";
 import UserModel from "./db/models/userModel";
 let User = new UserModel({phoneID:"03981739123"});

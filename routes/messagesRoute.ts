@@ -9,42 +9,58 @@ interface iMessageModel {
     userId: string
     area: { type: string, coordinates:number[][][] }
     upVotes: number
+    voters:string[]
     downVotes: number
     initialPoint: { longitude: number, latitude: number }
 }
 
+//end point to handle upvotes and downvotes
 messageRouter.put('/vote', (req, res) => {
     let id = req.body.id;
     let vote = req.body.vote;
-    if(vote===0){
-        res.sendStatus(200);
-    }else if(vote=== -1){
-        Message.findByIdAndUpdate(id,)
-    }
 
+    console.log(id,vote);
+    
     Message.findById(id).lean().then((doc)=>{
         if(!doc ){
             res.sendStatus(404).send("No such document in records");
         }
         let item:iMessageModel = <iMessageModel>doc;        
-      
-       // doc = pointToArea(doc,res);//initial post has 0 vote delta
+       
+       //TODO: reenable this code do avoid user voting twice on a circle
+        if(item.voters.indexOf(id)>-1){
+            console.log("already voted on this question");
+            
+            return res.sendStatus(300)
+        }
+        //doc = pointToArea(doc,res);//initial post has 0 vote delta
         if (!item) {
             //if false it means that the message got negative feedback and will be deleted
             return;
         }
-        item.upVotes = item.upVotes+1;
+        if(vote=== -1){
+           item.downVotes ++;
+        }else if(vote === 1){
+            item.upVotes ++; 
+               
+        }else if(vote===0){
+            item.voters.push(id)
+            // res.sendStatus(200);
+        }else{
+            // res.send({errorMessage:"No a valid voting value!"})
+        }
         item.area = pointToArea(item,res)
+        console.log(item.area.coordinates[0][0]);
+        
         Message.updateOne(item).then((doc: Document<iMessageModel>) => {
             
             console.log("successful write to messages");
-    
+            res.sendStatus(200)
         }).catch((err: Error) => {
             console.log("unsuccessful write to messages",err);
             res.send(err)
         });
     })
-
 
 
 });
@@ -123,7 +139,7 @@ messageRouter.get('/:long:lat', (req, res) => {
 function pointToArea(message:iMessageModel, res:express.Response) {
     
     //TODO: figure a formula to factor distance according to likes;
-    let distanceFactor: number = (message.upVotes-message.downVotes) * 0.00001;
+    let distanceFactor: number = (message.upVotes-message.downVotes) * 0.001;
     const slices = 40;
     let xValue: number;
     let yValue: number;
