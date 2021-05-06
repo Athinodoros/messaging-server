@@ -14,7 +14,7 @@ export interface iMessageModel extends Document {
 let MessageSchema = new Schema(
     { 
         content: {type:String, required:true},
-        User: {type: Schema.Types.ObjectId, ref: 'User', required:true},
+        User: {type: String, ref: 'User', required:true},
         area: {
             type: {
               type: String, // Don't do `{ location: { type: String } }`
